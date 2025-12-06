@@ -1,4 +1,4 @@
-package br.com.entrevizinhos.ui.viewModel
+package br.com.entrevizinhos.viewmodel
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

@@ -1,8 +1,10 @@
 package br.com.entrevizinhos.model
 
-import java.io.Serializable
+import android.os.Parcelable
+import kotlinx.android.parcel.Parcelize
 import java.util.Date
 
+@Parcelize
 data class Anuncio(
     val id: String = "",
     val titulo: String = "",
@@ -13,4 +15,4 @@ data class Anuncio(
     val fotos: List<String> = emptyList(),
     val vendedorId: String = "",
     val dataPublicacao: Date = Date(),
-) : Serializable
+) : Parcelable

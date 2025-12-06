@@ -35,4 +35,34 @@ class AnuncioRepository {
             e.printStackTrace()
             false // Se deu errado
         }
+
+    suspend fun deletarAnuncio(id: String): Boolean {
+        try {
+            collection.document(id).delete().await()
+            return true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return false
+        }
+    }
+
+    suspend fun atualizarAnuncio(anuncio: Anuncio): Boolean {
+        try {
+            collection.document(anuncio.id).set(anuncio).await()
+            return true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return false
+        }
+    }
+
+    suspend fun buscarAnuncioPorId(id: String): Anuncio? {
+        try {
+            val snapshot = collection.document(id).get().await()
+            return snapshot.toObject(Anuncio::class.java)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return null
+        }
+    }
 }

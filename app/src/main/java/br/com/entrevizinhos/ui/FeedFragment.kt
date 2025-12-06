@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import br.com.entrevizinhos.databinding.FragmentFeedBinding
 import br.com.entrevizinhos.model.Anuncio
 import br.com.entrevizinhos.ui.adapter.AnuncioAdapter
-import br.com.entrevizinhos.ui.viewModel.AnuncioViewModel
+import br.com.entrevizinhos.viewmodel.AnuncioViewModel
 
 class FeedFragment : Fragment() {
     private var _binding: FragmentFeedBinding? = null

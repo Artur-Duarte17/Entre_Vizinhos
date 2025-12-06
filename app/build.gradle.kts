@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     id("com.google.gms.google-services")
+    id("kotlin-parcelize")
 }
 
 android {
@@ -84,6 +85,5 @@ dependencies {
 
     // Fragment KTX (Para usar 'by viewModels()')
     implementation("androidx.fragment:fragment-ktx:1.7.1")
-
-
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:VERSAO_MAIS_RECENTE")
 }
