@@ -7,11 +7,13 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import br.com.entrevizinhos.databinding.FragmentFeedBinding
 import br.com.entrevizinhos.model.Anuncio
 import br.com.entrevizinhos.ui.adapter.AnuncioAdapter
-import br.com.entrevizinhos.ui.viewModel.AnuncioViewModel
+import br.com.entrevizinhos.viewmodel.AnuncioViewModel
 
 class FeedFragment : Fragment() {
     private var _binding: FragmentFeedBinding? = null
@@ -49,10 +51,11 @@ class FeedFragment : Fragment() {
 //            )
         adapter =
             AnuncioAdapter(emptyList()) { anuncio ->
-                Toast.makeText(requireContext(), "Clicou: ${anuncio.titulo}", Toast.LENGTH_SHORT).show()
+                val action = FeedFragmentDirections.actionFeedFragmentToDetalhesAnuncioFragment(anuncio)
+                findNavController().navigate(action)
             }
 
-        binding.rvAnuncios.layoutManager = LinearLayoutManager(requireContext())
+        binding.rvAnuncios.layoutManager = GridLayoutManager(requireContext(), 2) // coloca em grid 2 colunas
         binding.rvAnuncios.adapter = adapter
     }
 

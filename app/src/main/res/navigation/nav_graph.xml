@@ -20,7 +20,12 @@
         android:id="@+id/feedFragment"
         android:name="br.com.entrevizinhos.ui.FeedFragment"
         android:label="Início"
-        tools:layout="@layout/fragment_feed" />
+        tools:layout="@layout/fragment_feed">
+
+        <action
+            android:id="@+id/action_feedFragment_to_detalhesAnuncioFragment"
+            app:destination="@id/detalhesAnuncioFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/colecaoFragment"
@@ -45,6 +50,18 @@
     <fragment
         android:id="@+id/criarAnuncioFragment"
         android:name="br.com.entrevizinhos.ui.CriarAnuncioFragment"
-        android:label="Criar Anúncio"
+        android:label="Criar Anuncio"
         tools:layout="@layout/fragment_criar_anuncio" />
+
+    <fragment
+        android:id="@+id/detalhesAnuncioFragment"
+        android:name="br.com.entrevizinhos.ui.DetalhesAnuncioFragment"
+        android:label="Detalhes"
+        tools:layout="@layout/fragment_detalhes_anuncio">
+
+        <argument
+            android:name="anuncio"
+            app:argType="br.com.entrevizinhos.model.Anuncio" />
+    </fragment>
+
 </navigation>
