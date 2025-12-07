@@ -27,8 +27,13 @@ class AnuncioRepository {
 
     suspend fun salvarAnuncio(anuncio: Anuncio): Boolean =
         try {
-            // O .add() envia o objeto e gera um ID automático no servidor, .set() quando vc quer definir o ID
-            collection.add(anuncio).await()
+            if (anuncio.id.isNotBlank()) {
+                collection.document(anuncio.id).set(anuncio).await()
+            } else {
+                collection
+                    .add(anuncio)
+                    .await() // O .add() envia o objeto e gera um ID automático no servidor, .set() quando vc quer definir o ID
+            }
             true // Se deu certo
         } catch (e: Exception) {
             // Se a internet cair ou o servidor rejeitar
@@ -46,15 +51,15 @@ class AnuncioRepository {
         }
     }
 
-    suspend fun atualizarAnuncio(anuncio: Anuncio): Boolean {
-        try {
-            collection.document(anuncio.id).set(anuncio).await()
-            return true
-        } catch (e: Exception) {
-            e.printStackTrace()
-            return false
-        }
-    }
+//    suspend fun atualizarAnuncio(anuncio: Anuncio): Boolean {
+//        try {
+//            collection.document(anuncio.id).set(anuncio).await()
+//            return true
+//        } catch (e: Exception) {
+//            e.printStackTrace()
+//            return false
+//        }
+//    }
 
     suspend fun buscarAnuncioPorId(id: String): Anuncio? {
         try {
