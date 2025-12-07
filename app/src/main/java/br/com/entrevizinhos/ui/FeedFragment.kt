@@ -75,7 +75,7 @@ class FeedFragment : Fragment() {
 
             // Atualiza o adaptador
 
-            aplicarFiltros(listaAnuncios, "Todos") // aciona para filtrar a lista de anuncios completa
+            aplicarFiltros(listaAnuncios, getString(R.string.categoria_todos)) // aciona para filtrar a lista de anuncios completa
 
             //  se a lista estiver vazia
             if (listaAnuncios.isEmpty()) {
@@ -88,8 +88,9 @@ class FeedFragment : Fragment() {
         listaCompleta: List<Anuncio>,
         categoria: String,
     ) {
+        val labelTodos = getString(R.string.categoria_todos)
         var listaFiltrada =
-            if (categoria.equals(getString(R.string.categoria_todos), ignoreCase = true)) {
+            if (categoria.equals(labelTodos, ignoreCase = true)) {
                 listaCompleta
             } else {
                 listaCompleta.filter { anuncio ->
@@ -103,7 +104,7 @@ class FeedFragment : Fragment() {
     private fun capturaCategoria() {
         binding.chipGroupCategorias.setOnCheckedStateChangeListener { group, checkedIds ->
             // Como o ChipGroup está com singleSelection=true, sempre será 0 ou 1 id
-            val checkedId = checkedIds.firstOrNull() ?: return@setOnCheckedStateChangeListener
+            val checkedId = checkedIds.firstOrNull() ?: return@setOnCheckedStateChangeListener // se vier vazio cancela operação
 
             // Acha o Chip dentro do ChipGroup a partir do id selecionado
             val chipSelecionado = group.findViewById<Chip>(checkedId)

@@ -12,6 +12,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
+import br.com.entrevizinhos.R
 import br.com.entrevizinhos.databinding.FragmentCriarAnuncioBinding
 import br.com.entrevizinhos.viewmodel.CriarAnuncioViewModel
 
@@ -55,7 +56,7 @@ class CriarAnuncioFragment : Fragment() {
 
     private fun setupSpinner() {
         // Opções para o botão clicável de categoria (Spinner)
-        val categorias = listOf("Selecione", "Móveis", "Eletrônicos", "Serviços", "Roupas", "Outros")
+        val categorias = resources.getStringArray(R.array.categorias_anuncio)
         val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, categorias)
         binding.spinnerCategoria.adapter = adapter
     }
@@ -116,7 +117,7 @@ class CriarAnuncioFragment : Fragment() {
                     categoria = categoria,
                     entrega = entrega,
                     formasPagamento = formasPagamento,
-                    fotoUri = uriFotoSelecionada // <-- Passando a foto escolhida
+                    fotoUri = uriFotoSelecionada, // <-- Passando a foto escolhida
                 )
             } else {
                 Toast.makeText(context, "Preencha Título, Preço e Categoria", Toast.LENGTH_SHORT).show()
