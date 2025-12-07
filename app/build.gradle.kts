@@ -85,5 +85,5 @@ dependencies {
 
     // Fragment KTX (Para usar 'by viewModels()')
     implementation("androidx.fragment:fragment-ktx:1.7.1")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:VERSAO_MAIS_RECENTE")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
 }

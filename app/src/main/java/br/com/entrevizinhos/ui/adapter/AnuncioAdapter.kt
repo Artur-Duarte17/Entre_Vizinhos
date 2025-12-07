@@ -41,6 +41,8 @@ class AnuncioAdapter(
         holder.binding.apply {
             tvTitulo.text = anuncio.titulo
             tvPreco.text = "R$ ${String.format("%.2f", anuncio.preco)}"
+            tvLocalizacao.text = anuncio.cidade.ifEmpty { "Sem localização" }
+            ivAnuncioFoto.setImageResource(android.R.drawable.ic_menu_gallery)
 
             // Configura o clique no item inteiro
             root.setOnClickListener {
