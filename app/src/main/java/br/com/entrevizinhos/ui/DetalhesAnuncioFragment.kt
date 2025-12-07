@@ -50,7 +50,8 @@ class DetalhesAnuncioFragment : Fragment() {
             tvDetalheTitulo.text = anuncio.titulo
             tvDetalhePreco.text = "R$ ${String.format("%.2f", anuncio.preco)}"
             tvDetalheDescricao.text = anuncio.descricao
-            tvDetalheLocal.text = anuncio.cidade
+            tvDetalheCategoria.text = anuncio.categoria
+            tvLocalVendedor.text = anuncio.cidade
 
             // Se houver fotos, carregamos a primeira com o Glide
             if (anuncio.fotos.isNotEmpty()) {
