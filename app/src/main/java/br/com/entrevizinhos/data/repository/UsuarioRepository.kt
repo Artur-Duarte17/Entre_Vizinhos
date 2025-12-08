@@ -22,36 +22,20 @@ class UsuarioRepository {
         }
     }
 
+    // Aplica operação atômica: se adicionar==true -> arrayUnion, se false -> arrayRemove
     suspend fun setFavorito(
         usuarioId: String,
         anuncioId: String,
+        adicionar: Boolean,
     ): Boolean {
         try {
-            val usuario = getUsuario(usuarioId) ?: return false
+            val operacao = if (adicionar) FieldValue.arrayUnion(anuncioId) else FieldValue.arrayRemove(anuncioId)
 
-            // 2. Verificamos se o anúncio está na lista de favoritos
-            val isFavoritoAtual = anuncioId in usuario.favoritos // atribui boolean
-
-            // 3. Escolhemos a operação atômica a ser aplicada
-            val operacao =
-                if (isFavoritoAtual) {
-                    // Se já é favorito, vamos remover (Unfavorite)
-                    FieldValue.arrayRemove(anuncioId)
-                } else {
-                    // Se não é favorito, vamos adicionar (Favorite)
-                    FieldValue.arrayUnion(anuncioId)
-                }
-
-            // 4. Aplicamos a atualização atômica no Firestore
-            collection
-                .document(usuarioId)
-                .update("favoritos", operacao)
-                .await() // salva no banco
-
-            return true // Sucesso
+            collection.document(usuarioId).update("favoritos", operacao).await()
+            return true
         } catch (e: Exception) {
             Log.e("UserRepo", "Erro ao alterar favorito.", e)
-            return false // Falha
+            return false
         }
     }
 }

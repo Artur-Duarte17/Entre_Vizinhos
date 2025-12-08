@@ -79,7 +79,17 @@ class AnuncioRepository {
     suspend fun buscarAnuncios(): List<Anuncio> =
         try {
             val snapshot = collection.get().await()
-            snapshot.toObjects(Anuncio::class.java)
+            // Mapear documentos para garantir que o campo id seja preenchido com document.id
+            snapshot.documents.mapNotNull { doc ->
+                val a = doc.toObject(Anuncio::class.java)
+                if (a == null) {
+                    null
+                } else if (a.id.isBlank()) {
+                    a.copy(id = doc.id)
+                } else {
+                    a
+                }
+            }
         } catch (e: Exception) {
             Log.e(TAG, "Erro ao buscar dados", e)
             emptyList()
@@ -88,7 +98,14 @@ class AnuncioRepository {
     suspend fun buscarAnuncioPorId(id: String): Anuncio? =
         try {
             val snapshot = collection.document(id).get().await()
-            snapshot.toObject(Anuncio::class.java)
+            val a = snapshot.toObject(Anuncio::class.java)
+            if (a == null) {
+                null
+            } else if (a.id.isBlank()) {
+                a.copy(id = snapshot.id)
+            } else {
+                a
+            }
         } catch (e: Exception) {
             Log.e(TAG, "Erro ao buscar anuncio", e)
             null
@@ -102,7 +119,16 @@ class AnuncioRepository {
                     .get()
                     .await()
 
-            snapshot.toObjects(Anuncio::class.java)
+            snapshot.documents.mapNotNull { doc ->
+                val a = doc.toObject(Anuncio::class.java)
+                if (a == null) {
+                    null
+                } else if (a.id.isBlank()) {
+                    a.copy(id = doc.id)
+                } else {
+                    a
+                }
+            }
         } catch (e: Exception) {
             Log.e(TAG, "Erro ao buscar anuncio do vendedor", e)
             emptyList()

@@ -16,11 +16,10 @@ import br.com.entrevizinhos.ui.adapter.AnuncioAdapter
 import br.com.entrevizinhos.viewmodel.PerfilViewModel
 import com.bumptech.glide.Glide
 import java.text.SimpleDateFormat
-import java.util.Locale
 
 class PerfilFragment : Fragment() {
-    private var _binding: FragmentPerfilBinding? = null
-    private val binding get() = _binding!!
+    private var bindingNullable: FragmentPerfilBinding? = null
+    private val binding get() = bindingNullable!!
 
     private val viewModel: PerfilViewModel by viewModels()
 
@@ -31,7 +30,7 @@ class PerfilFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
-        _binding = FragmentPerfilBinding.inflate(inflater, container, false)
+        bindingNullable = FragmentPerfilBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -75,10 +74,22 @@ class PerfilFragment : Fragment() {
             }
         }
 
-        meusAnunciosAdapter = AnuncioAdapter(emptyList()) { anuncio ->
-            val action = PerfilFragmentDirections.actionPerfilToDetalhesAnuncio(anuncio)
-            findNavController().navigate(action)
-        }
+        meusAnunciosAdapter =
+            AnuncioAdapter(
+                listaAnuncios = emptyList(),
+                favoritosIds =
+                    viewModel.dadosUsuario.value
+                        ?.favoritos
+                        ?.toSet() ?: emptySet(),
+                onAnuncioClick = { anuncio ->
+                    val action = PerfilFragmentDirections.actionPerfilToDetalhesAnuncio(anuncio)
+                    findNavController().navigate(action)
+                },
+                onFavoritoClick = { _ ->
+                    // Favoritar a partir do perfil não implementado — mostrar toast
+                    Toast.makeText(requireContext(), "Favoritar não implementado aqui", Toast.LENGTH_SHORT).show()
+                },
+            )
 
         binding.rvMeusAnuncios.layoutManager = GridLayoutManager(context, 2)
         binding.rvMeusAnuncios.adapter = meusAnunciosAdapter
@@ -92,8 +103,15 @@ class PerfilFragment : Fragment() {
             binding.tvEndereco.text = usuario.endereco.ifEmpty { "Endereço não informado" }
             binding.tvCnpj.text = usuario.cnpj.ifEmpty { "-" }
 
-            val df = SimpleDateFormat("yyyy", Locale("pt", "BR"))
-            binding.tvMembroDesde.text = "Membro desde ${df.format(usuario.membroDesde)}"
+            val localePtBr =
+                java.util.Locale
+                    .Builder()
+                    .setLanguage("pt")
+                    .setRegion("BR")
+                    .build()
+            val df = SimpleDateFormat("yyyy", localePtBr)
+            val membroDesdeStr = df.format(usuario.membroDesde)
+            binding.tvMembroDesde.text = getString(br.com.entrevizinhos.R.string.membro_desde_format, membroDesdeStr)
 
             if (usuario.fotoUrl.isNotEmpty()) {
                 if (usuario.fotoUrl.startsWith("data:image")) {
@@ -102,15 +120,26 @@ class PerfilFragment : Fragment() {
                         val decodedBytes = Base64.decode(base64Clean, Base64.DEFAULT)
                         val bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
                         binding.ivPerfilFoto.setImageBitmap(bitmap)
-                    } catch (e: Exception) { }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
                 } else {
-                    Glide.with(this).load(usuario.fotoUrl).circleCrop().into(binding.ivPerfilFoto)
+                    Glide
+                        .with(this)
+                        .load(usuario.fotoUrl)
+                        .circleCrop()
+                        .into(binding.ivPerfilFoto)
                 }
             }
         }
 
         viewModel.meusAnuncios.observe(viewLifecycleOwner) { lista ->
-            meusAnunciosAdapter.atualizarLista(lista)
+            meusAnunciosAdapter.atualizarLista(
+                lista,
+                viewModel.dadosUsuario.value
+                    ?.favoritos
+                    ?.toSet() ?: emptySet(),
+            )
         }
 
         viewModel.estadoLogout.observe(viewLifecycleOwner) { saiu ->
@@ -124,6 +153,6 @@ class PerfilFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding = null
+        bindingNullable = null
     }
 }
