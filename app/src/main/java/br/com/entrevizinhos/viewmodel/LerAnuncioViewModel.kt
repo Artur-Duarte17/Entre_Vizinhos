@@ -11,7 +11,7 @@ import br.com.entrevizinhos.data.repository.UsuarioRepository
 import br.com.entrevizinhos.model.Anuncio
 import kotlinx.coroutines.launch
 
-class AnuncioViewModel : ViewModel() {
+class LerAnuncioViewModel : ViewModel() {
     // Repositórios
     private val anuncioRepository = AnuncioRepository()
     private val usuarioRepository = UsuarioRepository()

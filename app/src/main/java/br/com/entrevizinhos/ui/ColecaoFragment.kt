@@ -4,22 +4,20 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import br.com.entrevizinhos.databinding.FragmentColecaoBinding
-import br.com.entrevizinhos.model.Anuncio
 import br.com.entrevizinhos.ui.adapter.AnuncioAdapter
-import br.com.entrevizinhos.viewmodel.AnuncioViewModel
+import br.com.entrevizinhos.viewmodel.LerAnuncioViewModel
 
 class ColecaoFragment : Fragment() {
     private var bindingNullable: FragmentColecaoBinding? = null
     private val binding get() = bindingNullable!!
 
     // Compartilha o ViewModel com outras telas
-    private val anuncioViewModel: AnuncioViewModel by activityViewModels()
+    private val lerAnuncioViewModel: LerAnuncioViewModel by activityViewModels()
 
     private lateinit var adapter: AnuncioAdapter
 
@@ -45,7 +43,7 @@ class ColecaoFragment : Fragment() {
         adapter =
             AnuncioAdapter(
                 listaAnuncios = emptyList(),
-                favoritosIds = anuncioViewModel.favoritosIds.value ?: emptySet(),
+                favoritosIds = lerAnuncioViewModel.favoritosIds.value ?: emptySet(),
                 onAnuncioClick = { anuncio ->
                     // ===== NAVEGAR PARA DETALHES =====
                     val action = ColecaoFragmentDirections.actionColecaoToDetalhesAnuncio(anuncio)
@@ -53,7 +51,7 @@ class ColecaoFragment : Fragment() {
                 },
                 onFavoritoClick = { anuncio ->
                     // Delegar toggle para o ViewModel
-                    anuncioViewModel.onFavoritoClick(anuncio.id)
+                    lerAnuncioViewModel.onFavoritoClick(anuncio.id)
                 },
             )
 
@@ -63,14 +61,14 @@ class ColecaoFragment : Fragment() {
 
     private fun setupObservers() {
         // Observa anúncios e favoritos e mostra apenas os favoritos
-        anuncioViewModel.anuncios.observe(viewLifecycleOwner) { lista ->
-            val favoritos = anuncioViewModel.favoritosIds.value ?: emptySet()
+        lerAnuncioViewModel.anuncios.observe(viewLifecycleOwner) { lista ->
+            val favoritos = lerAnuncioViewModel.favoritosIds.value ?: emptySet()
             val listaFiltrada = lista.filter { it.id in favoritos }
             adapter.atualizarLista(listaFiltrada, favoritos)
         }
 
-        anuncioViewModel.favoritosIds.observe(viewLifecycleOwner) { favoritos ->
-            val lista = anuncioViewModel.anuncios.value ?: emptyList()
+        lerAnuncioViewModel.favoritosIds.observe(viewLifecycleOwner) { favoritos ->
+            val lista = lerAnuncioViewModel.anuncios.value ?: emptyList()
             val listaFiltrada = lista.filter { it.id in favoritos }
             adapter.atualizarLista(listaFiltrada, favoritos)
         }

@@ -13,7 +13,7 @@ import br.com.entrevizinhos.R
 import br.com.entrevizinhos.databinding.FragmentFeedBinding
 import br.com.entrevizinhos.model.Anuncio
 import br.com.entrevizinhos.ui.adapter.AnuncioAdapter
-import br.com.entrevizinhos.viewmodel.AnuncioViewModel
+import br.com.entrevizinhos.viewmodel.LerAnuncioViewModel
 import com.google.android.material.chip.Chip
 
 class FeedFragment : Fragment() {
@@ -22,7 +22,7 @@ class FeedFragment : Fragment() {
     private val binding get() = bindingNullable!!
 
     // usa ViewModel compartilhado entre fragments
-    private val anuncioViewModel: AnuncioViewModel by activityViewModels()
+    private val lerAnuncioViewModel: LerAnuncioViewModel by activityViewModels()
 
     private lateinit var adapter: AnuncioAdapter // lateintit permite ser vazio
 
@@ -63,7 +63,7 @@ class FeedFragment : Fragment() {
         adapter =
             AnuncioAdapter(
                 listaAnuncios = emptyList(),
-                favoritosIds = anuncioViewModel.favoritosIds.value ?: emptySet(),
+                favoritosIds = lerAnuncioViewModel.favoritosIds.value ?: emptySet(),
                 onAnuncioClick = { anuncio ->
                     val action =
                         FeedFragmentDirections.actionFeedFragmentToDetalhesAnuncioFragment(anuncio)
@@ -71,7 +71,7 @@ class FeedFragment : Fragment() {
                 },
                 onFavoritoClick = { anuncio ->
                     // delega pro ViewModel alterar favorito do usuário logado
-                    anuncioViewModel.onFavoritoClick(anuncio.id)
+                    lerAnuncioViewModel.onFavoritoClick(anuncio.id)
                 },
             )
 
@@ -83,7 +83,7 @@ class FeedFragment : Fragment() {
         // Mostra a barra de progresso assim que começamos a observar
         binding.pbLoading.visibility = View.VISIBLE
 
-        anuncioViewModel.anuncios.observe(viewLifecycleOwner) { listaAnuncios ->
+        lerAnuncioViewModel.anuncios.observe(viewLifecycleOwner) { listaAnuncios ->
             // Esconde a barra de progresso
             binding.pbLoading.visibility = View.GONE
 
@@ -98,7 +98,7 @@ class FeedFragment : Fragment() {
         }
 
         // Reaplica filtros quando favoritos mudarem
-        anuncioViewModel.favoritosIds.observe(viewLifecycleOwner) { _ ->
+        lerAnuncioViewModel.favoritosIds.observe(viewLifecycleOwner) { _ ->
             aplicarFiltros(listaAtual, categoriaAtual.ifEmpty { getString(R.string.categoria_todos) })
         }
     }
@@ -117,7 +117,7 @@ class FeedFragment : Fragment() {
                 }
             }
 
-        adapter.atualizarLista(listaFiltrada, anuncioViewModel.favoritosIds.value ?: emptySet())
+        adapter.atualizarLista(listaFiltrada, lerAnuncioViewModel.favoritosIds.value ?: emptySet())
     }
 
     private fun capturaCategoria() {
@@ -134,7 +134,7 @@ class FeedFragment : Fragment() {
             categoriaAtual = categoriaSelecionada
 
             // Pega a lista mais recente que o ViewModel tem em memória
-            val listaAtualLocal = anuncioViewModel.anuncios.value ?: emptyList()
+            val listaAtualLocal = lerAnuncioViewModel.anuncios.value ?: emptyList()
 
             // Aplica o filtro com base nessa categoria
             aplicarFiltros(listaAtualLocal, categoriaSelecionada)
