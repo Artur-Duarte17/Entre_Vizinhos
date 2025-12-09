@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import br.com.entrevizinhos.R
 import br.com.entrevizinhos.data.repository.AuthRepository
@@ -16,6 +17,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.GoogleAuthProvider
+import kotlinx.coroutines.launch
 
 class LoginFragment : Fragment() {
     private var _binding: FragmentLoginBinding? = null
@@ -60,7 +62,12 @@ class LoginFragment : Fragment() {
                         val conta = task.getResult(ApiException::class.java)
                         val credencial = GoogleAuthProvider.getCredential(conta.idToken, null)
 
-                        authRepository.loginComGoogle(credencial) { sucesso ->
+                        // [CORREÇÃO] Abre um escopo de corrotina ligado à vida do Fragment
+                        lifecycleScope.launch {
+                            // Agora podemos chamar a função suspend!
+                            // Note que não usamos mais { callback }, e sim pegamos o resultado direto
+                            val sucesso = authRepository.loginComGoogle(credencial)
+
                             if (sucesso) {
                                 Toast.makeText(context, "Bem-vindo!", Toast.LENGTH_SHORT).show()
                                 findNavController().navigate(R.id.action_login_to_feed)

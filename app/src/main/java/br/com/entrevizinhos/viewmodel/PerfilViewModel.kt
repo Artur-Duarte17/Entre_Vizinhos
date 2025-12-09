@@ -15,9 +15,9 @@ import kotlinx.coroutines.launch
 class PerfilViewModel : ViewModel() {
     private val repository = AuthRepository()
     private val anuncioRepository = AnuncioRepository()
-
     private val usuarioRepository = UsuarioRepository()
-    private val _vendedor = MutableLiveData<Usuario?>() // Pode ser nulo se não encontrar
+
+    private val _vendedor = MutableLiveData<Usuario?>()
     val vendedor: LiveData<Usuario?> = _vendedor
 
     // --- DADOS DO USUÁRIO ---
@@ -32,47 +32,44 @@ class PerfilViewModel : ViewModel() {
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading: LiveData<Boolean> = _isLoading
 
-    // Busca dados no Firebase
+    // --- ANUNCIOS ---
+    private val _meusAnuncios = MutableLiveData<List<Anuncio>>()
+    val meusAnuncios: LiveData<List<Anuncio>> = _meusAnuncios
+
+    // [CORREÇÃO 1] Refatorado para usar Coroutines (sem callback)
     fun carregarDados() {
-        repository.carregarDadosUsuario { usuario ->
+        viewModelScope.launch {
+            _isLoading.value = true
+            // A execução "pausa" aqui até o dado chegar, sem travar a UI
+            val usuario = repository.carregarDadosUsuario()
+
             if (usuario != null) {
-                _dadosUsuario.postValue(usuario)
+                _dadosUsuario.value = usuario
             }
+            _isLoading.value = false
         }
     }
 
-    // Salva alterações (Nome/Telefone/Foto)
+    // [CORREÇÃO 2] Refatorado para usar Coroutines (sem callback)
     fun salvarPerfil(usuario: Usuario) {
-        _isLoading.value = true
-        repository.salvarPerfil(usuario) { sucesso ->
+        viewModelScope.launch {
+            _isLoading.value = true
+
+            // Chama a função suspend e espera o retorno booleano
+            val sucesso = repository.salvarPerfil(usuario)
+
             _isLoading.value = false
             if (sucesso) {
                 _dadosUsuario.value = usuario
             }
         }
     }
-    fun deletarAnuncio(anuncioId: String, callback: (Boolean) -> Unit) {
-        val db = FirebaseFirestore.getInstance()
-
-        db.collection("anuncios").document(anuncioId).delete()
-            .addOnSuccessListener {
-                callback(true)
-            }
-            .addOnFailureListener {
-                callback(false)
-            }
-    }
-
 
     // Desloga do Firebase
     fun deslogar() {
         repository.signOut()
         _estadoLogout.value = true
     }
-
-    // ANUNCIOS
-    private val _meusAnuncios = MutableLiveData<List<Anuncio>>()
-    val meusAnuncios: LiveData<List<Anuncio>> = _meusAnuncios
 
     fun carregarMeusAnuncios() {
         val usuarioAtual = repository.getCurrentUser()
@@ -93,5 +90,25 @@ class PerfilViewModel : ViewModel() {
             val usuario = usuarioRepository.getUsuario(id)
             _vendedor.value = usuario
         }
+    }
+
+    // [OBSERVAÇÃO TÉCNICA]
+    // Idealmente, esta lógica de Firestore deveria estar no AnuncioRepository,
+    // mas mantive aqui para não quebrar seu fluxo atual.
+    fun deletarAnuncio(
+        anuncioId: String,
+        callback: (Boolean) -> Unit,
+    ) {
+        val db = FirebaseFirestore.getInstance()
+
+        db
+            .collection("anuncios")
+            .document(anuncioId)
+            .delete()
+            .addOnSuccessListener {
+                callback(true)
+            }.addOnFailureListener {
+                callback(false)
+            }
     }
 }

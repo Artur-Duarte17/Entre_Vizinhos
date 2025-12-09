@@ -5,9 +5,9 @@ import br.com.entrevizinhos.model.Usuario
 import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await // [IMPORTANTE] Permite usar .await() nas Tasks do Firebase
 
 class AuthRepository {
-    // A instância foi nomeada como 'auth' aqui
     private val auth = FirebaseAuth.getInstance()
     private val db = FirebaseFirestore.getInstance()
 
@@ -17,109 +17,107 @@ class AuthRepository {
         auth.signOut()
     }
 
-    // Busca dados do usuário
-    fun carregarDadosUsuario(callback: (Usuario?) -> Unit) {
-        val userId = auth.currentUser?.uid
-        if (userId == null) {
-            callback(null)
-            return
+    /**
+     * Busca dados do usuário de forma assíncrona.
+     * Retorna o Usuario ou null se não estiver logado.
+     * Em caso de erro, retorna um usuário básico para não travar o app.
+     */
+    suspend fun carregarDadosUsuario(): Usuario? {
+        val userId = auth.currentUser?.uid ?: return null
+
+        return try {
+            // Await suspende a execução até o Firestore responder, sem travar a UI
+            val document =
+                db
+                    .collection("usuarios")
+                    .document(userId)
+                    .get()
+                    .await()
+
+            if (document.exists()) {
+                document.toObject(Usuario::class.java)
+            } else {
+                // Usuário sem dados no banco, cria objeto com dados do Auth
+                criarUsuarioBasico(userId)
+            }
+        } catch (e: Exception) {
+            Log.e("AuthRepo", "Erro ao carregar dados: ${e.message}")
+            // Fallback em caso de erro (ex: sem internet)
+            criarUsuarioBasico(userId)
+        }
+    }
+
+    /**
+     * Salva ou atualiza o perfil do usuário.
+     */
+    suspend fun salvarPerfil(usuario: Usuario): Boolean {
+        val userId = auth.currentUser?.uid ?: return false
+        return try {
+            db
+                .collection("usuarios")
+                .document(userId)
+                .set(usuario)
+                .await()
+            true
+        } catch (e: Exception) {
+            Log.e("AuthRepo", "Erro ao salvar perfil", e)
+            false
+        }
+    }
+
+    suspend fun loginAnonymously(): Boolean =
+        try {
+            auth.signInAnonymously().await()
+            true
+        } catch (e: Exception) {
+            Log.e("AuthRepo", "Erro login anônimo", e)
+            false
         }
 
-        db
-            .collection("usuarios")
-            .document(userId)
-            .get()
-            .addOnSuccessListener { document ->
-                if (document.exists()) {
-                    val usuario = document.toObject(Usuario::class.java)
-                    callback(usuario)
-                } else {
-                    // Usuário sem dados no banco, retorna dados do Google ou anônimo
-                    val email = auth.currentUser?.email ?: ""
-                    val nome = auth.currentUser?.displayName ?: "Vizinho Visitante"
-                    val foto = auth.currentUser?.photoUrl?.toString() ?: ""
-                    callback(Usuario(id = userId, email = email, nome = nome, fotoUrl = foto))
-                }
-            }.addOnFailureListener {
-                // Se der erro (ex: sem internet), libera o acesso com dados básicos
-                val email = auth.currentUser?.email ?: ""
-                callback(Usuario(id = userId, email = email))
-            }
-    }
-
-    fun salvarPerfil(
-        usuario: Usuario,
-        callback: (Boolean) -> Unit,
-    ) {
-        val userId = auth.currentUser?.uid ?: return
-        db
-            .collection("usuarios")
-            .document(userId)
-            .set(usuario)
-            .addOnSuccessListener { callback(true) }
-            .addOnFailureListener { callback(false) }
-    }
-
-    // CORREÇÃO AQUI: Usando 'auth' em vez de 'firebaseAuth'
-    fun loginAnonymously(onComplete: (Boolean) -> Unit) {
-        auth.signInAnonymously()
-            .addOnCompleteListener { task ->
-                onComplete(task.isSuccessful)
-            }
-    }
-
-    fun loginComGoogle(
-        credential: AuthCredential,
-        callback: (Boolean) -> Unit,
-    ) {
+    /**
+     * Realiza login com Google e cria o documento no Firestore se não existir.
+     */
+    suspend fun loginComGoogle(credential: AuthCredential): Boolean {
         Log.d("AuthRepo", "Iniciando login com credencial...")
-        auth
-            .signInWithCredential(credential)
-            .addOnSuccessListener { result ->
-                val user = result.user
-                if (user != null) {
-                    val userId = user.uid
-                    Log.d("AuthRepo", "Login Auth OK! ID: $userId")
+        return try {
+            // 1. Autentica no Firebase Auth
+            val result = auth.signInWithCredential(credential).await()
+            val user = result.user ?: return false
+            val userId = user.uid
+            Log.d("AuthRepo", "Login Auth OK! ID: $userId")
 
-                    // Tenta salvar no banco
-                    val userDoc = db.collection("usuarios").document(userId)
+            // 2. Verifica se o usuário já existe no Firestore
+            val userDocRef = db.collection("usuarios").document(userId)
+            val document = userDocRef.get().await()
 
-                    userDoc
-                        .get()
-                        .addOnSuccessListener { document ->
-                            if (!document.exists()) {
-                                // Cria usuário novo
-                                val novoUsuario =
-                                    Usuario(
-                                        id = userId,
-                                        nome = user.displayName ?: "Novo Vizinho",
-                                        email = user.email ?: "",
-                                        fotoUrl = user.photoUrl.toString(),
-                                    )
-                                userDoc
-                                    .set(novoUsuario)
-                                    .addOnSuccessListener {
-                                        Log.d("AuthRepo", "Salvo no Firestore com sucesso")
-                                        callback(true) // SUCESSO COMPLETO
-                                    }.addOnFailureListener { e ->
-                                        Log.e("AuthRepo", "Erro ao salvar no Firestore", e)
-                                        callback(true) // IMPORTANTE: Deixa entrar mesmo com erro no banco
-                                    }
-                            } else {
-                                Log.d("AuthRepo", "Usuário já existia no Firestore")
-                                callback(true) // SUCESSO (Já existia)
-                            }
-                        }.addOnFailureListener { e ->
-                            Log.e("AuthRepo", "Erro ao ler Firestore", e)
-                            callback(true) // IMPORTANTE: Deixa entrar mesmo com erro de leitura
-                        }
-                } else {
-                    Log.e("AuthRepo", "Usuário veio nulo do Google")
-                    callback(false)
-                }
-            }.addOnFailureListener { e ->
-                Log.e("AuthRepo", "Erro fatal na autenticação", e)
-                callback(false)
+            if (!document.exists()) {
+                // 3. Se não existe, cria o registro inicial
+                val novoUsuario =
+                    Usuario(
+                        id = userId,
+                        nome = user.displayName ?: "Novo Vizinho",
+                        email = user.email ?: "",
+                        fotoUrl = user.photoUrl?.toString() ?: "",
+                    )
+                // O await aqui garante que só retornamos true após salvar
+                userDocRef.set(novoUsuario).await()
+                Log.d("AuthRepo", "Novo usuário salvo no Firestore")
+            } else {
+                Log.d("AuthRepo", "Usuário já existia no Firestore")
             }
+
+            true // Sucesso total
+        } catch (e: Exception) {
+            Log.e("AuthRepo", "Erro fatal na autenticação/banco", e)
+            false
+        }
+    }
+
+    // Helper privado para evitar duplicação de código
+    private fun criarUsuarioBasico(userId: String): Usuario {
+        val email = auth.currentUser?.email ?: ""
+        val nome = auth.currentUser?.displayName ?: "Vizinho Visitante"
+        val foto = auth.currentUser?.photoUrl?.toString() ?: ""
+        return Usuario(id = userId, email = email, nome = nome, fotoUrl = foto)
     }
 }
