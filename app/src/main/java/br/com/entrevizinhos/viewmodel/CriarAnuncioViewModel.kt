@@ -8,20 +8,20 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.com.entrevizinhos.data.repository.AnuncioRepository
 import br.com.entrevizinhos.data.repository.AuthRepository
-import br.com.entrevizinhos.data.repository.UsuarioRepository // [NOVO IMPORT]
+import br.com.entrevizinhos.data.repository.UsuarioRepository
 import br.com.entrevizinhos.model.Anuncio
-import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
 import java.util.Date
 
 class CriarAnuncioViewModel : ViewModel() {
     private val repository = AnuncioRepository()
     private val authRepository = AuthRepository()
-    private val usuarioRepository = UsuarioRepository() // [NOVO] Instância do repositório de usuário
+    private val usuarioRepository = UsuarioRepository()
 
     private val _resultadoPublicacao = MutableLiveData<Boolean>()
     val resultadoPublicacao: LiveData<Boolean> = _resultadoPublicacao
 
+    // ... (método publicarAnuncio mantém igual ao que você já corrigiu) ...
     fun publicarAnuncio(
         titulo: String,
         preco: Double,
@@ -32,15 +32,13 @@ class CriarAnuncioViewModel : ViewModel() {
         fotos: List<Uri> = emptyList(),
         context: Context,
     ) {
+        // ... seu código de publicar existente ...
         val usuarioAtual = authRepository.getCurrentUser()
 
         if (usuarioAtual != null) {
             viewModelScope.launch {
                 try {
-                    // [CORREÇÃO] 1. Busca os dados completos do usuário no Firestore antes de criar o anúncio
                     val dadosUsuario = usuarioRepository.getUsuario(usuarioAtual.uid)
-
-                    // Define a cidade baseada no endereço do usuário ou um valor padrão caso esteja vazio
                     val cidadeDoUsuario = dadosUsuario?.endereco?.takeIf { it.isNotEmpty() } ?: "Localização não informada"
 
                     val fotosBase64 =
@@ -74,7 +72,7 @@ class CriarAnuncioViewModel : ViewModel() {
         }
     }
 
-    // ... restante do código (atualizarAnuncio) permanece igual
+    // [REFATORADO] Agora usa o Repository e Coroutines
     fun atualizarAnuncio(
         anuncioId: String,
         titulo: String,
@@ -83,10 +81,9 @@ class CriarAnuncioViewModel : ViewModel() {
         categoria: String,
         entrega: String,
         formasPagamento: String,
-        context: Context,
+        context: Context, // Mantido para compatibilidade, mas não é usado na atualização simples
     ) {
-        val db = FirebaseFirestore.getInstance()
-
+        // Prepara o mapa de dados a serem atualizados
         val anuncioAtualizado =
             mapOf(
                 "titulo" to titulo,
@@ -97,14 +94,12 @@ class CriarAnuncioViewModel : ViewModel() {
                 "formasPagamento" to formasPagamento,
             )
 
-        db
-            .collection("anuncios")
-            .document(anuncioId)
-            .update(anuncioAtualizado)
-            .addOnSuccessListener {
-                _resultadoPublicacao.postValue(true)
-            }.addOnFailureListener {
-                _resultadoPublicacao.postValue(false)
-            }
+        viewModelScope.launch {
+            // Chama o repositório de forma assíncrona
+            val sucesso = repository.atualizarAnuncio(anuncioId, anuncioAtualizado)
+
+            // Atualiza a LiveData com o resultado
+            _resultadoPublicacao.postValue(sucesso)
+        }
     }
 }

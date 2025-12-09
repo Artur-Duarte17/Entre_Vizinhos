@@ -136,10 +136,6 @@ class AnuncioRepository {
 
     // ---------- ESCRITA (CREATE/UPDATE) ----------
 
-    /**
-     * Nome em inglês usado no primeiro arquivo.
-     * Mantido por compatibilidade. Usa salvarAnuncio internamente.
-     */
     suspend fun setAnuncio(anuncio: Anuncio): Boolean = salvarAnuncio(anuncio)
 
     /**
@@ -159,6 +155,18 @@ class AnuncioRepository {
             false
         }
 
+    suspend fun atualizarAnuncio(
+        id: String,
+        dados: Map<String, Any>,
+    ): Boolean =
+        try {
+            collection.document(id).update(dados).await()
+            Log.d(TAG, "Anúncio $id atualizado com sucesso")
+            true
+        } catch (e: Exception) {
+            Log.e(TAG, "Erro ao atualizar anúncio: $id", e)
+            false
+        }
     // ---------- DELETE ----------
 
     suspend fun deletarAnuncio(id: String): Boolean =
