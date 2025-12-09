@@ -164,9 +164,10 @@ class AnuncioRepository {
     suspend fun deletarAnuncio(id: String): Boolean =
         try {
             collection.document(id).delete().await()
+            Log.d(TAG, "Anúncio $id deletado com sucesso")
             true
         } catch (e: Exception) {
-            Log.e(TAG, "Erro ao deletar anuncio.", e)
+            Log.e(TAG, "Erro ao deletar anúncio: $id", e)
             false
         }
 }
