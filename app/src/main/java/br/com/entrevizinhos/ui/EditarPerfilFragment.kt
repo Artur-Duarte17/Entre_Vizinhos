@@ -1,52 +1,60 @@
 package br.com.entrevizinhos.ui
 
+import android.graphics.BitmapFactory
+import android.graphics.Matrix
 import android.net.Uri
 import android.os.Bundle
+import android.util.Base64
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.exifinterface.media.ExifInterface
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import br.com.entrevizinhos.data.model.Usuario
 import br.com.entrevizinhos.databinding.FragmentEditarPerfilBinding
-import br.com.entrevizinhos.model.Usuario
 import br.com.entrevizinhos.viewmodel.PerfilViewModel
-import androidx.fragment.app.viewModels
 import com.bumptech.glide.Glide
-import android.graphics.BitmapFactory
-import android.graphics.Matrix
-import android.util.Base64
-import androidx.exifinterface.media.ExifInterface
 import java.io.InputStream
 
+/**
+ * Fragment para edição do perfil do usuário
+ * Permite alterar dados pessoais e foto de perfil
+ */
 class EditarPerfilFragment : Fragment() {
+    private var _binding: FragmentEditarPerfilBinding? = null // Binding nullável
+    private val binding get() = _binding!! // Acesso seguro
+    private val viewModel: PerfilViewModel by viewModels() // ViewModel para persistência
+    private val args: EditarPerfilFragmentArgs by navArgs() // Dados atuais do usuário
 
-    private var _binding: FragmentEditarPerfilBinding? = null
-    private val binding get() = _binding!!
-    private val viewModel: PerfilViewModel by viewModels()
-    private val args: EditarPerfilFragmentArgs by navArgs()
+    private var novaFotoUri: Uri? = null // Nova foto selecionada (se houver)
 
-    private var novaFotoUri: Uri? = null
-
-    private val selecionarFoto = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-        if (uri != null) {
-            novaFotoUri = uri
-            binding.ivFotoEdit.setImageURI(uri)
+    // Launcher para seleção de nova foto de perfil
+    private val selecionarFoto =
+        registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+            if (uri != null) {
+                novaFotoUri = uri // Armazena URI da nova foto
+                binding.ivFotoEdit.setImageURI(uri) // Mostra preview imediato
+            }
         }
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         _binding = FragmentEditarPerfilBinding.inflate(inflater, container, false)
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
 
         val usuarioAtual = args.usuario
@@ -77,7 +85,8 @@ class EditarPerfilFragment : Fragment() {
                     val decodedBytes = Base64.decode(base64Clean, Base64.DEFAULT)
                     val bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
                     binding.ivFotoEdit.setImageBitmap(bitmap)
-                } catch (e: Exception) { }
+                } catch (e: Exception) {
+                }
             } else {
                 Glide.with(this).load(usuario.fotoUrl).into(binding.ivFotoEdit)
             }
@@ -96,12 +105,13 @@ class EditarPerfilFragment : Fragment() {
             val novoCnpj = binding.etCnpj.text.toString()
 
             if (novoNome.isNotEmpty()) {
-                var usuarioAtualizado = usuario.copy(
-                    nome = novoNome,
-                    endereco = novoEndereco,
-                    telefone = novoTelefone,
-                    cnpj = novoCnpj
-                )
+                var usuarioAtualizado =
+                    usuario.copy(
+                        nome = novoNome,
+                        endereco = novoEndereco,
+                        telefone = novoTelefone,
+                        cnpj = novoCnpj,
+                    )
 
                 // Se selecionou nova foto, converte para Base64 com rotação correta
                 if (novaFotoUri != null) {
@@ -115,10 +125,11 @@ class EditarPerfilFragment : Fragment() {
                         val inputStream2: InputStream? = requireContext().contentResolver.openInputStream(novaFotoUri!!)
                         if (inputStream2 != null) {
                             val exif = ExifInterface(inputStream2)
-                            val orientation = exif.getAttributeInt(
-                                ExifInterface.TAG_ORIENTATION,
-                                ExifInterface.ORIENTATION_NORMAL
-                            )
+                            val orientation =
+                                exif.getAttributeInt(
+                                    ExifInterface.TAG_ORIENTATION,
+                                    ExifInterface.ORIENTATION_NORMAL,
+                                )
                             inputStream2.close()
 
                             // Rotaciona a imagem se necessário
@@ -149,7 +160,10 @@ class EditarPerfilFragment : Fragment() {
         }
     }
 
-    private fun rotacionarBitmap(bitmap: android.graphics.Bitmap?, orientation: Int): android.graphics.Bitmap? {
+    private fun rotacionarBitmap(
+        bitmap: android.graphics.Bitmap?,
+        orientation: Int,
+    ): android.graphics.Bitmap? {
         if (bitmap == null) return null
 
         val matrix = Matrix()

@@ -10,25 +10,30 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope // [NOVO IMPORT] Necessário para Coroutines
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import br.com.entrevizinhos.R
+import br.com.entrevizinhos.data.model.Anuncio
 import br.com.entrevizinhos.databinding.FragmentPerfilBinding
 import br.com.entrevizinhos.ui.adapter.AnuncioAdapter
 import br.com.entrevizinhos.viewmodel.PerfilViewModel
 import com.bumptech.glide.Glide
-import kotlinx.coroutines.launch // [NOVO IMPORT] Necessário para launch
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Locale
 
+/**
+ * Fragment do perfil do usuário logado
+ * Exibe dados pessoais e lista de anúncios publicados com opções de edição
+ */
 class PerfilFragment : Fragment() {
-    private var bindingNullable: FragmentPerfilBinding? = null
-    private val binding get() = bindingNullable!!
+    private var bindingNullable: FragmentPerfilBinding? = null // Binding nullável
+    private val binding get() = bindingNullable!! // Acesso seguro
 
-    private val viewModel: PerfilViewModel by viewModels()
+    private val viewModel: PerfilViewModel by viewModels() // ViewModel local
 
-    private lateinit var meusAnunciosAdapter: AnuncioAdapter
+    private lateinit var meusAnunciosAdapter: AnuncioAdapter // Adapter com botões de ação
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -168,7 +173,7 @@ class PerfilFragment : Fragment() {
         }
     }
 
-    private fun mostrarDialogoDeletarAnuncio(anuncio: br.com.entrevizinhos.model.Anuncio) {
+    private fun mostrarDialogoDeletarAnuncio(anuncio: Anuncio) {
         AlertDialog
             .Builder(requireContext())
             .setTitle("Deletar Anúncio")
@@ -180,7 +185,7 @@ class PerfilFragment : Fragment() {
             }.show()
     }
 
-    private fun deletarAnuncio(anuncio: br.com.entrevizinhos.model.Anuncio) {
+    private fun deletarAnuncio(anuncio: Anuncio) {
         lifecycleScope.launch {
             val sucesso = viewModel.deletarAnuncio(anuncio.id)
             if (sucesso) {

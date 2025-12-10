@@ -14,40 +14,50 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import br.com.entrevizinhos.data.model.Anuncio
 import br.com.entrevizinhos.databinding.FragmentCriarAnuncioBinding
 import br.com.entrevizinhos.viewmodel.CriarAnuncioViewModel
 import com.google.android.material.chip.Chip
 
+/**
+ * Fragment para edição de anúncios existentes
+ * Reutiliza layout do CriarAnuncioFragment com dados pré-preenchidos
+ */
 class EditarAnuncioFragment : Fragment() {
+    private var _binding: FragmentCriarAnuncioBinding? = null // Reutiliza layout de criação
+    private val binding get() = _binding!! // Acesso seguro ao binding
+    private lateinit var viewModel: CriarAnuncioViewModel // ViewModel compartilhado
 
-    private var _binding: FragmentCriarAnuncioBinding? = null
-    private val binding get() = _binding!!
-    private lateinit var viewModel: CriarAnuncioViewModel
+    private val args: EditarAnuncioFragmentArgs by navArgs() // Anúncio a ser editado
 
-    private val args: EditarAnuncioFragmentArgs by navArgs()
+    // Variáveis de estado para seleções do usuário
+    private var entregaSelecionada = "" // Modalidade de entrega selecionada
+    private val pagamentosSelecionados = mutableSetOf<String>() // Formas de pagamento
 
-    private var entregaSelecionada = ""
-    private val pagamentosSelecionados = mutableSetOf<String>()
-
+    // Variáveis para gerenciar novas fotos (se o usuário trocar)
     private var uriFoto1: Uri? = null
     private var uriFoto2: Uri? = null
     private var uriFoto3: Uri? = null
-    private var slotFotoSelecionado = 1
+    private var slotFotoSelecionado = 1 // Controla qual slot está sendo editado
 
+    // Launcher para seleção de novas fotos (substituição das existentes)
     private val selecionarFoto =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
             if (uri != null) {
+                // Atualiza slot correspondente com nova foto
                 when (slotFotoSelecionado) {
                     1 -> {
-                        uriFoto1 = uri
-                        binding.ivFoto1.setImageURI(uri)
-                        binding.ivFoto1.setPadding(0, 0, 0, 0)
+                        uriFoto1 = uri // Armazena URI da nova foto
+                        binding.ivFoto1.setImageURI(uri) // Mostra preview
+                        binding.ivFoto1.setPadding(0, 0, 0, 0) // Remove padding padrão
                     }
+
                     2 -> {
                         uriFoto2 = uri
                         binding.ivFoto2.setImageURI(uri)
                         binding.ivFoto2.setPadding(0, 0, 0, 0)
                     }
+
                     3 -> {
                         uriFoto3 = uri
                         binding.ivFoto3.setImageURI(uri)
@@ -72,24 +82,27 @@ class EditarAnuncioFragment : Fragment() {
     ) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Inicializa ViewModel (mesmo usado para criar e editar)
         viewModel = ViewModelProvider(this).get(CriarAnuncioViewModel::class.java)
 
-        val anuncio = args.anuncio
+        val anuncio = args.anuncio // Anúncio recebido para edição
 
-        // Preenchendo os campos com os dados existentes
-        binding.toolbar.title = "Editar Anúncio"
+        // Personalização da tela para modo edição
+        binding.toolbar.title = "Editar Anúncio" // Muda título da toolbar
+        // Preenche campos com dados existentes
         binding.etTituloAnuncio.setText(anuncio.titulo)
         binding.etDescricaoAnuncio.setText(anuncio.descricao)
         binding.etPrecoAnuncio.setText(anuncio.preco.toString())
 
-        setupToolbar()
-        setupSpinner(anuncio.categoria)
-        setupChipsEntrega(anuncio.entrega)
-        setupChipsPagamento(anuncio.formasPagamento)
-        setupFotos(anuncio.fotos) // ===== ADICIONAR FOTOS EXISTENTES =====
-        setupFotoListeners()
-        setupListeners(anuncio)
-        setupObservers()
+        // Configuração da tela com dados existentes
+        setupToolbar() // Botão voltar
+        setupSpinner(anuncio.categoria) // Categoria pré-selecionada
+        setupChipsEntrega(anuncio.entrega) // Entrega pré-selecionada
+        setupChipsPagamento(anuncio.formasPagamento) // Pagamentos pré-selecionados
+        setupFotos(anuncio.fotos) // Carrega fotos existentes
+        setupFotoListeners() // Listeners para trocar fotos
+        setupListeners(anuncio) // Botão atualizar
+        setupObservers() // Observa resultado da operação
     }
 
     private fun setupToolbar() {
@@ -167,10 +180,12 @@ class EditarAnuncioFragment : Fragment() {
                                 binding.ivFoto1.setImageBitmap(bitmap)
                                 binding.ivFoto1.setPadding(0, 0, 0, 0)
                             }
+
                             1 -> {
                                 binding.ivFoto2.setImageBitmap(bitmap)
                                 binding.ivFoto2.setPadding(0, 0, 0, 0)
                             }
+
                             2 -> {
                                 binding.ivFoto3.setImageBitmap(bitmap)
                                 binding.ivFoto3.setPadding(0, 0, 0, 0)
@@ -199,17 +214,26 @@ class EditarAnuncioFragment : Fragment() {
         }
     }
 
-    private fun setupListeners(anuncio: br.com.entrevizinhos.model.Anuncio) {
+    private fun setupListeners(anuncio: Anuncio) {
         binding.btnPublicarAnuncio.text = "Atualizar Anúncio"
         binding.btnPublicarAnuncio.setOnClickListener {
             atualizarAnuncio(anuncio)
         }
     }
 
-    private fun atualizarAnuncio(anuncio: br.com.entrevizinhos.model.Anuncio) {
-        val titulo = binding.etTituloAnuncio.text.toString().trim()
-        val descricao = binding.etDescricaoAnuncio.text.toString().trim()
-        val precoStr = binding.etPrecoAnuncio.text.toString().trim()
+    private fun atualizarAnuncio(anuncio: Anuncio) {
+        val titulo =
+            binding.etTituloAnuncio.text
+                .toString()
+                .trim()
+        val descricao =
+            binding.etDescricaoAnuncio.text
+                .toString()
+                .trim()
+        val precoStr =
+            binding.etPrecoAnuncio.text
+                .toString()
+                .trim()
         val categoria = binding.spinnerCategoria.selectedItem.toString()
 
         if (titulo.isEmpty() || precoStr.isEmpty() || categoria == "Selecione") {

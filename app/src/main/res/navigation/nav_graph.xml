@@ -79,7 +79,7 @@
         tools:layout="@layout/fragment_criar_anuncio">
         <argument
             android:name="anuncio"
-            app:argType="br.com.entrevizinhos.model.Anuncio" />
+            app:argType="br.com.entrevizinhos.data.model.Anuncio" />
         <action
             android:id="@+id/action_editarAnuncio_to_perfil"
             app:destination="@id/perfilFragment"
@@ -94,7 +94,7 @@
         tools:layout="@layout/fragment_detalhes_anuncio">
         <argument
             android:name="anuncio"
-            app:argType="br.com.entrevizinhos.model.Anuncio" />
+            app:argType="br.com.entrevizinhos.data.model.Anuncio" />
     </fragment>
 
     <fragment
@@ -104,7 +104,7 @@
         tools:layout="@layout/fragment_editar_perfil">
         <argument
             android:name="usuario"
-            app:argType="br.com.entrevizinhos.model.Usuario" />
+            app:argType="br.com.entrevizinhos.data.model.Usuario" />
     </fragment>
 
 </navigation>
