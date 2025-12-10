@@ -6,7 +6,7 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Base64
 import android.util.Log
-import br.com.entrevizinhos.model.Anuncio
+import br.com.entrevizinhos.data.model.Anuncio
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
@@ -35,7 +35,8 @@ class AnuncioRepository {
         larguraMaxima: Int = 600, // Limite de pixels para redimensionar
         qualidadeJpeg: Int = 70, // Compressão de 0-100 (70 = boa qualidade)
     ): String? =
-        withContext(Dispatchers.IO) { // Thread de I/O para não travar UI
+        withContext(Dispatchers.IO) {
+            // Thread de I/O para não travar UI
             try {
                 // Abre stream da imagem do dispositivo
                 val inputStream = context.contentResolver.openInputStream(uri)

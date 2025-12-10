@@ -1,7 +1,7 @@
 package br.com.entrevizinhos.data.repository
 
 import android.util.Log
-import br.com.entrevizinhos.model.Usuario
+import br.com.entrevizinhos.data.model.Usuario
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
@@ -34,10 +34,12 @@ class UsuarioRepository {
     ): Boolean {
         try {
             // Escolhe operação atômica baseada na ação desejada
-            val operacao = if (adicionar) 
-                FieldValue.arrayUnion(anuncioId) // Adiciona se não existir
-            else 
-                FieldValue.arrayRemove(anuncioId) // Remove se existir
+            val operacao =
+                if (adicionar) {
+                    FieldValue.arrayUnion(anuncioId) // Adiciona se não existir
+                } else {
+                    FieldValue.arrayRemove(anuncioId) // Remove se existir
+                }
 
             // Atualiza apenas o campo "favoritos" do documento
             collection.document(usuarioId).update("favoritos", operacao).await()

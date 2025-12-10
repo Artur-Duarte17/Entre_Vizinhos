@@ -1,12 +1,8 @@
-package br.com.entrevizinhos.model
+package br.com.entrevizinhos.data.model
 
 import java.io.Serializable
 import java.util.Date
 
-/**
- * Modelo de dados para representar um usuário do app
- * Contém informações pessoais e preferências
- */
 data class Usuario(
     val id: String = "", // UID do Firebase Auth (chave primária)
     val nome: String = "", // Nome de exibição nos anúncios

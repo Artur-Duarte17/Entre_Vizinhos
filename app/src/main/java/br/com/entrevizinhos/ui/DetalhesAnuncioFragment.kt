@@ -14,9 +14,9 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import br.com.entrevizinhos.R
+import br.com.entrevizinhos.data.model.Anuncio
+import br.com.entrevizinhos.data.model.Usuario
 import br.com.entrevizinhos.databinding.FragmentDetalhesAnuncioBinding
-import br.com.entrevizinhos.model.Anuncio
-import br.com.entrevizinhos.model.Usuario
 import br.com.entrevizinhos.ui.adapter.FotosPagerAdapter
 import br.com.entrevizinhos.viewmodel.LerAnuncioViewModel
 import br.com.entrevizinhos.viewmodel.PerfilViewModel
@@ -68,7 +68,7 @@ class DetalhesAnuncioFragment : Fragment() {
 
     // Configura toolbar com botão de voltar
     private fun setupToolbar() {
-        binding.toolbarDetalhes.setNavigationOnClickListener { 
+        binding.toolbarDetalhes.setNavigationOnClickListener {
             findNavController().popBackStack() // Volta para tela anterior
         }
     }

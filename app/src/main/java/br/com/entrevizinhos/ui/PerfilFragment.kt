@@ -14,6 +14,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import br.com.entrevizinhos.R
+import br.com.entrevizinhos.data.model.Anuncio
 import br.com.entrevizinhos.databinding.FragmentPerfilBinding
 import br.com.entrevizinhos.ui.adapter.AnuncioAdapter
 import br.com.entrevizinhos.viewmodel.PerfilViewModel
@@ -172,7 +173,7 @@ class PerfilFragment : Fragment() {
         }
     }
 
-    private fun mostrarDialogoDeletarAnuncio(anuncio: br.com.entrevizinhos.model.Anuncio) {
+    private fun mostrarDialogoDeletarAnuncio(anuncio: Anuncio) {
         AlertDialog
             .Builder(requireContext())
             .setTitle("Deletar Anúncio")
@@ -184,7 +185,7 @@ class PerfilFragment : Fragment() {
             }.show()
     }
 
-    private fun deletarAnuncio(anuncio: br.com.entrevizinhos.model.Anuncio) {
+    private fun deletarAnuncio(anuncio: Anuncio) {
         lifecycleScope.launch {
             val sucesso = viewModel.deletarAnuncio(anuncio.id)
             if (sucesso) {

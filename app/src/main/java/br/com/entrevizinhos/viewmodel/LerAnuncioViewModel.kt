@@ -5,10 +5,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import br.com.entrevizinhos.data.model.Anuncio
 import br.com.entrevizinhos.data.repository.AnuncioRepository
 import br.com.entrevizinhos.data.repository.AuthRepository
 import br.com.entrevizinhos.data.repository.UsuarioRepository
-import br.com.entrevizinhos.model.Anuncio
 import kotlinx.coroutines.launch
 
 /**
@@ -35,7 +35,8 @@ class LerAnuncioViewModel : ViewModel() {
 
     // Busca e atualiza cache local com todos os anúncios disponíveis
     fun buscarAnuncios() {
-        viewModelScope.launch { // Operação assíncrona
+        viewModelScope.launch {
+            // Operação assíncrona
             val lista = anuncioRepository.getAnuncios() // Consulta Firestore
             _anuncios.value = lista // Atualiza LiveData (notifica observers)
         }
@@ -45,7 +46,8 @@ class LerAnuncioViewModel : ViewModel() {
     private fun carregarFavoritosDoUsuario() {
         val usuarioAtual = authRepository.getCurrentUser() ?: return // Sai se não logado
 
-        viewModelScope.launch { // Operação assíncrona
+        viewModelScope.launch {
+            // Operação assíncrona
             val usuario = usuarioRepository.getUsuario(usuarioAtual.uid) // Busca perfil
             val favoritos = usuario?.favoritos ?: emptyList() // Lista ou vazia
             _favoritosIds.value = favoritos.toSet() // Converte para Set (busca rápida)

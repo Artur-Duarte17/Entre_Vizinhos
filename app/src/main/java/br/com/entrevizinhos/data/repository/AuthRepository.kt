@@ -1,7 +1,7 @@
 package br.com.entrevizinhos.data.repository
 
 import android.util.Log
-import br.com.entrevizinhos.model.Usuario
+import br.com.entrevizinhos.data.model.Usuario
 import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore

@@ -4,11 +4,11 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import br.com.entrevizinhos.data.model.Anuncio
+import br.com.entrevizinhos.data.model.Usuario
 import br.com.entrevizinhos.data.repository.AnuncioRepository
 import br.com.entrevizinhos.data.repository.AuthRepository
 import br.com.entrevizinhos.data.repository.UsuarioRepository
-import br.com.entrevizinhos.model.Anuncio
-import br.com.entrevizinhos.model.Usuario
 import kotlinx.coroutines.launch
 
 /**

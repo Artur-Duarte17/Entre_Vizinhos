@@ -6,10 +6,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import br.com.entrevizinhos.data.model.Anuncio
 import br.com.entrevizinhos.data.repository.AnuncioRepository
 import br.com.entrevizinhos.data.repository.AuthRepository
 import br.com.entrevizinhos.data.repository.UsuarioRepository
-import br.com.entrevizinhos.model.Anuncio
 import kotlinx.coroutines.launch
 import java.util.Date
 
@@ -25,6 +25,7 @@ class CriarAnuncioViewModel : ViewModel() {
     // Estado da operação de publicação (sucesso/falha)
     private val _resultadoPublicacao = MutableLiveData<Boolean>()
     val resultadoPublicacao: LiveData<Boolean> = _resultadoPublicacao // Observável pela UI
+
     // Processo completo de publicação de anúncio
     fun publicarAnuncio(
         titulo: String, // Nome do produto/serviço
@@ -39,16 +40,19 @@ class CriarAnuncioViewModel : ViewModel() {
         val usuarioAtual = authRepository.getCurrentUser() // Verifica autenticação
 
         if (usuarioAtual != null) {
-            viewModelScope.launch { // Corrotina para operações assíncronas
+            viewModelScope.launch {
+                // Corrotina para operações assíncronas
                 try {
                     // Etapa 1: Busca localização do vendedor
                     val dadosUsuario = usuarioRepository.getUsuario(usuarioAtual.uid)
-                    val cidadeDoUsuario = dadosUsuario?.endereco?.takeIf { it.isNotEmpty() } 
-                        ?: "Localização não informada" // Fallback se não tiver endereço
+                    val cidadeDoUsuario =
+                        dadosUsuario?.endereco?.takeIf { it.isNotEmpty() }
+                            ?: "Localização não informada" // Fallback se não tiver endereço
 
                     // Etapa 2: Processa imagens (converte para Base64)
                     val fotosBase64 =
-                        fotos.mapNotNull { uri -> // Filtra URIs válidas
+                        fotos.mapNotNull { uri ->
+                            // Filtra URIs válidas
                             repository.converterImagemParaBase64(context, uri) // Compressão + Base64
                         }
 
@@ -103,7 +107,8 @@ class CriarAnuncioViewModel : ViewModel() {
                 // Nota: fotos, vendedorId e dataPublicacao não são alterados
             )
 
-        viewModelScope.launch { // Operação assíncrona
+        viewModelScope.launch {
+            // Operação assíncrona
             // Executa update parcial no Firestore
             val sucesso = repository.atualizarAnuncio(anuncioId, anuncioAtualizado)
             _resultadoPublicacao.postValue(sucesso) // Notifica resultado

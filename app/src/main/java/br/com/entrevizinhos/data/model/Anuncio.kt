@@ -1,13 +1,8 @@
-package br.com.entrevizinhos.model
+package br.com.entrevizinhos.data.model
 
-import com.google.firebase.firestore.DocumentId
 import java.io.Serializable
 import java.util.Date
 
-/**
- * Modelo de dados para representar um anúncio no app
- * Implementa Serializable para navegação entre fragments
- */
 data class Anuncio(
     val id: String = "", // ID único gerado pelo Firestore
     val titulo: String = "", // Nome do produto/serviço anunciado

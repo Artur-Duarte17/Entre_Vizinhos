@@ -14,6 +14,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import br.com.entrevizinhos.data.model.Anuncio
 import br.com.entrevizinhos.databinding.FragmentCriarAnuncioBinding
 import br.com.entrevizinhos.viewmodel.CriarAnuncioViewModel
 import com.google.android.material.chip.Chip
@@ -23,7 +24,6 @@ import com.google.android.material.chip.Chip
  * Reutiliza layout do CriarAnuncioFragment com dados pré-preenchidos
  */
 class EditarAnuncioFragment : Fragment() {
-
     private var _binding: FragmentCriarAnuncioBinding? = null // Reutiliza layout de criação
     private val binding get() = _binding!! // Acesso seguro ao binding
     private lateinit var viewModel: CriarAnuncioViewModel // ViewModel compartilhado
@@ -51,11 +51,13 @@ class EditarAnuncioFragment : Fragment() {
                         binding.ivFoto1.setImageURI(uri) // Mostra preview
                         binding.ivFoto1.setPadding(0, 0, 0, 0) // Remove padding padrão
                     }
+
                     2 -> {
                         uriFoto2 = uri
                         binding.ivFoto2.setImageURI(uri)
                         binding.ivFoto2.setPadding(0, 0, 0, 0)
                     }
+
                     3 -> {
                         uriFoto3 = uri
                         binding.ivFoto3.setImageURI(uri)
@@ -178,10 +180,12 @@ class EditarAnuncioFragment : Fragment() {
                                 binding.ivFoto1.setImageBitmap(bitmap)
                                 binding.ivFoto1.setPadding(0, 0, 0, 0)
                             }
+
                             1 -> {
                                 binding.ivFoto2.setImageBitmap(bitmap)
                                 binding.ivFoto2.setPadding(0, 0, 0, 0)
                             }
+
                             2 -> {
                                 binding.ivFoto3.setImageBitmap(bitmap)
                                 binding.ivFoto3.setPadding(0, 0, 0, 0)
@@ -210,17 +214,26 @@ class EditarAnuncioFragment : Fragment() {
         }
     }
 
-    private fun setupListeners(anuncio: br.com.entrevizinhos.model.Anuncio) {
+    private fun setupListeners(anuncio: Anuncio) {
         binding.btnPublicarAnuncio.text = "Atualizar Anúncio"
         binding.btnPublicarAnuncio.setOnClickListener {
             atualizarAnuncio(anuncio)
         }
     }
 
-    private fun atualizarAnuncio(anuncio: br.com.entrevizinhos.model.Anuncio) {
-        val titulo = binding.etTituloAnuncio.text.toString().trim()
-        val descricao = binding.etDescricaoAnuncio.text.toString().trim()
-        val precoStr = binding.etPrecoAnuncio.text.toString().trim()
+    private fun atualizarAnuncio(anuncio: Anuncio) {
+        val titulo =
+            binding.etTituloAnuncio.text
+                .toString()
+                .trim()
+        val descricao =
+            binding.etDescricaoAnuncio.text
+                .toString()
+                .trim()
+        val precoStr =
+            binding.etPrecoAnuncio.text
+                .toString()
+                .trim()
         val categoria = binding.spinnerCategoria.selectedItem.toString()
 
         if (titulo.isEmpty() || precoStr.isEmpty() || categoria == "Selecione") {

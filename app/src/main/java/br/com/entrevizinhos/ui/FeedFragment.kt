@@ -10,8 +10,8 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import br.com.entrevizinhos.R
+import br.com.entrevizinhos.data.model.Anuncio
 import br.com.entrevizinhos.databinding.FragmentFeedBinding
-import br.com.entrevizinhos.model.Anuncio
 import br.com.entrevizinhos.ui.adapter.AnuncioAdapter
 import br.com.entrevizinhos.viewmodel.LerAnuncioViewModel
 import com.google.android.material.chip.Chip
@@ -115,7 +115,7 @@ class FeedFragment : Fragment() {
         categoria: String,
     ) {
         val labelTodos = getString(R.string.categoria_todos)
-        
+
         // Filtra por categoria ou mostra todos
         val listaFiltrada =
             if (categoria.equals(labelTodos, ignoreCase = true)) {

@@ -7,8 +7,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import br.com.entrevizinhos.data.model.Anuncio
 import br.com.entrevizinhos.databinding.ItemAnuncioBinding
-import br.com.entrevizinhos.model.Anuncio
 import com.bumptech.glide.Glide
 
 /**
@@ -24,12 +24,10 @@ class AnuncioAdapter(
     private val onDeletarClick: ((Anuncio) -> Unit)? = null, // Botão excluir (só no perfil)
     private val mostrarBotoes: Boolean = false, // Ativa modo edição
 ) : RecyclerView.Adapter<AnuncioAdapter.AnuncioViewHolder>() {
-
     // ViewHolder reutilizável para cada item da lista
     inner class AnuncioViewHolder(
         val binding: ItemAnuncioBinding, // View Binding para acesso direto às views
     ) : RecyclerView.ViewHolder(binding.root) {
-        
         // Popula views com dados do anúncio e estado de favorito
         fun bind(
             anuncio: Anuncio, // Dados do anúncio
