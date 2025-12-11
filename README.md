@@ -59,7 +59,6 @@ O app permite que usuários anunciem produtos, filtrem por categorias, entrem em
 - ⏳ **Validação de Dados:** Exigir dados cadastrais completos antes de anunciar
 - ⏳ **Validação de Telefone:** Verificação de número de telefone
 - ⏳ **Proteção de Email:** Impedir edição do email após cadastro
-- ⏳ **Moderação de Imagens:** Censura automática de conteúdo impróprio (perfil e anúncios)
 
 ### 🔍 Busca e Filtros
 - ⏳ **Busca por Nome:** Sistema de busca por título de anúncio (atualmente apenas filtro por categoria)
@@ -280,94 +279,6 @@ data class Usuario(
 )
 ```
 
----
-
-## ⚠️ Observações Técnicas
-
-### Armazenamento de Imagens
-
-⚠️ **IMPORTANTE:** Devido a restrições de custos do Firebase Storage (serviço pago), este projeto utiliza uma solução alternativa (gambiarra) para armazenamento de imagens:
-
-**Estratégia Atual (Base64):**
-- Imagens são convertidas para Base64 (formato `data:image/jpeg;base64,...`)
-- Armazenadas diretamente como Strings nos documentos do Firestore
-- Compressão automática para 70% de qualidade JPEG
-- Redimensionamento para largura máxima de 600px
-
-**Por que Base64?**
-- Firebase Storage é um serviço pago
-- Firestore oferece 1GB gratuito de armazenamento
-- Solução viável para projeto acadêmico sem custos
-
-**Decodificação:**
-```kotlin
-// Processo de conversão Base64 → Bitmap
-val base64Clean = imageString.substringAfter(",")
-val decodedBytes = Base64.decode(base64Clean, Base64.DEFAULT)
-val bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
-```
-
-**Correção de Rotação EXIF:**
-- Uso da biblioteca ExifInterface para detectar orientação original
-- Rotação automática de fotos tiradas pela câmera
-- Preservação da qualidade visual
-
-**Limitações:**
-- Tamanho máximo de documento Firestore: 1MB
-- Recomendado máximo de 3-4 fotos por anúncio
-- Performance de carregamento pode variar com conexão lenta
-
-### Sistema de Tempo Real
-
-**SnapshotListener (Não Otimizado):**
-```kotlin
-// Atualização automática do feed
-collection.addSnapshotListener { snapshot, error ->
-    if (error != null) return@addSnapshotListener
-    val anuncios = snapshot?.toObjects(Anuncio::class.java)
-    _anunciosLiveData.value = anuncios
-}
-```
-
-**Considerações:**
-- Consome leituras do Firestore a cada mudança
-- Ideal para desenvolvimento e testes
-- Para produção, considerar paginação e cache local
-
-### Moderação de Conteúdo
-
-**Status:** ⏳ Pendente de Implementação
-
-**Planejamento Futuro:**
-- Integração com ML Kit ou Cloud Vision API
-- Análise automática de imagens antes do upload
-- Bloqueio de conteúdo adulto, violento ou ofensivo
-- Sistema de denúncias manual para revisão humana
-
----
-
-## 🔒 Segurança e Privacidade
-
-### Autenticação
-- Login exclusivo via Google OAuth 2.0
-- Tokens JWT gerenciados pelo Firebase
-- Sessões persistentes com renovação automática
-
-### Proteção de Dados
-- Validação de entrada em todos os formulários
-- Sanitização de strings para prevenir XSS
-- Regras de segurança do Firestore configuradas
-- Dados sensíveis nunca expostos no cliente
-
-### Permissões do App
-```xml
-<uses-permission android:name="android.permission.INTERNET" />
-<uses-permission android:name="android.permission.CAMERA" /> <!-- Opcional -->
-<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-```
-
----
-
 ## 🎨 Design e UX
 
 ### Princípios de Design
@@ -411,42 +322,6 @@ collection.addSnapshotListener { snapshot, error ->
 
 ---
 
-## 📈 Roadmap e Melhorias Futuras
-
-### Prioridade Alta (Correções Críticas)
-- [ ] Bloquear edições para usuários não autenticados
-- [ ] Validar dados cadastrais antes de permitir anúncios
-- [ ] Implementar busca por nome de produto
-- [ ] Exibir apenas cidade (não endereço completo) nos anúncios
-- [ ] Bloquear edição de email
-- [ ] Implementar chat via WhatsApp (Deep Link)
-
-### Curto Prazo (1-2 meses)
-- [ ] Sistema de denúncias funcional
-- [ ] Deletar conta permanentemente
-- [ ] Sistema de avaliações de usuários
-- [ ] Validação de número de telefone
-- [ ] Moderação automática de imagens
-- [ ] Migração para Firebase Storage (se houver orçamento)
-
-### Médio Prazo (3-6 meses)
-- [ ] Implementação de paginação no feed
-- [ ] Sistema de notificações push (FCM)
-- [ ] Modo escuro (Dark Theme)
-- [ ] Filtros avançados (faixa de preço, distância)
-- [ ] Cache local com Room
-- [ ] Painel administrativo web
-
-### Longo Prazo (6+ meses)
-- [ ] Chat interno nativo
-- [ ] Histórico de transações
-- [ ] Expansão para outras cidades
-- [ ] Sistema de pagamento integrado
-- [ ] Recomendações personalizadas (ML)
-- [ ] Versão iOS (Swift/SwiftUI)
-
----
-
 ## 🐛 Problemas Conhecidos e Limitações
 
 ### Issues Críticas
@@ -473,61 +348,6 @@ collection.addSnapshotListener { snapshot, error ->
    
 6. **Sincronização:** SnapshotListener consome muitas leituras
    - **Solução Planejada:** Implementar cache local com Room
-
-### Funcionalidades Não Implementadas
-7. **Busca:** Sistema de busca por nome não funcional
-   - **Status:** Apenas filtro por categoria disponível
-   
-8. **Comunicação:** Chat WhatsApp não implementado
-   - **Status:** Botão presente mas sem funcionalidade
-
-9. **Moderação:** Sistema de denúncias não implementado
-   - **Status:** Botão presente mas sem funcionalidade
-
-10. **Conta:** Deletar conta não implementado
-    - **Status:** Planejado para próxima versão
-
-11. **Avaliações:** Sistema de rating não implementado
-    - **Status:** Modelo de dados preparado, UI pendente
-
-12. **Validação:** Número de telefone não verificado
-    - **Status:** Aceita qualquer formato
-
-### Como Reportar Bugs
-1. Acesse a aba [Issues](https://github.com/guilhex/Entre_Vizinhos/issues)
-2. Clique em "New Issue"
-3. Descreva o problema com:
-   - Passos para reproduzir
-   - Comportamento esperado vs. atual
-   - Screenshots (se aplicável)
-   - Versão do Android e dispositivo
-
----
-
-## 🤝 Contribuindo
-
-Contribuições são bem-vindas! Para contribuir:
-
-1. **Fork o projeto**
-2. **Crie uma branch para sua feature:**
-   ```bash
-   git checkout -b feature/MinhaNovaFuncionalidade
-   ```
-3. **Commit suas mudanças:**
-   ```bash
-   git commit -m 'Adiciona nova funcionalidade X'
-   ```
-4. **Push para a branch:**
-   ```bash
-   git push origin feature/MinhaNovaFuncionalidade
-   ```
-5. **Abra um Pull Request**
-
-### Diretrizes de Código
-- Siga as convenções de código Kotlin
-- Adicione comentários em código complexo
-- Escreva testes para novas funcionalidades
-- Atualize a documentação quando necessário
 
 ---
 
@@ -565,8 +385,6 @@ Este projeto é um trabalho acadêmico desenvolvido para fins educacionais. Todo
 
 <div align="center">
   <img src="app/src/main/res/drawable/logo_entre_vizinhos.png" alt="Logo Entre Vizinhos" width="200"/>
-  
-  **Feito com ❤️ em Urutaí-GO**
   
   ⭐ Se este projeto te ajudou, considere dar uma estrela!
 </div>
